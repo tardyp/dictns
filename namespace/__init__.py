@@ -64,10 +64,7 @@ def _appendToParent(parent, k):
     """
     Return 'parent.k' or 'k' if parent is None
     """
-    if parent is not None:
-        return parent + "." + k
-    else:
-        return k
+    return k if parent is None else parent + "." + k
 
 
 def documentNamespace(n, parent=None):
@@ -120,9 +117,7 @@ def compareNamespace(old, new, parent=None):
 
     compareKeys = ['changed', 'unchanged', 'added', 'removed']
 
-    namespaceDelta = Namespace({})
-    for ck in compareKeys:
-        namespaceDelta[ck] = {}
+    namespaceDelta = Namespace(dict((k, {}) for k in compareKeys))
 
     def updateDelta(currentDelta, childDelta):
         """Update current delta with child delta"""
@@ -132,53 +127,28 @@ def compareNamespace(old, new, parent=None):
 
     def do_item():
 
-        namespaceDelta = Namespace({})
-        for ck in compareKeys:
-            namespaceDelta[ck] = {}
+        namespaceDelta = Namespace(dict((k, {}) for k in compareKeys))
 
-        setNew, setOld = set(new.keys()), set(old.keys())
-        intersect = setNew.intersection(setOld)
-
-        added = setNew - intersect
-        removed = setOld - intersect
-        changed = set(o for o in intersect if old[o] != new[o])
-        unchanged = set(o for o in intersect if old[o] == new[o])
-
-        # process added keys
-        for k in added:
+        for k in set(old) | set(new):
+            vOld = old.get(k)
+            vNew = new.get(k)
+            if k in new and k not in old:
+                kstate = 'added'
+            elif k in old and k not in new:
+                kstate = 'removed'
+            elif vOld != vNew:
+                kstate = 'changed'
+            else:
+                kstate = 'unchanged'
             me = _appendToParent(parent, k)
-            vNew = new[k]
-            namespaceDelta.added[me] = {'parent': parent, 'old': None, 'new': vNew}
+            namespaceDelta[kstate][me] = {'parent': parent, 'old': vOld, 'new': vNew}
 
-        # process removed keys
-        for k in removed:
-            me = _appendToParent(parent, k)
-            vOld = old[k]
-            namespaceDelta.removed[me] = {'parent': parent, 'old': vOld, 'new': None}
+            if kstate in ['changed', 'unchanged']:
+                if isinstance(vOld, dict) and isinstance(vNew, dict):
+                    # compare child items Namespace
+                    childDelta = compareNamespace(vOld, vNew, me)
+                    namespaceDelta = updateDelta(namespaceDelta, childDelta)
 
-        # process changed keys
-        for k in changed:
-            me = _appendToParent(parent, k)
-            vOld = old[k]
-            vNew = new[k]
-            if vOld != vNew:
-                namespaceDelta.changed[me] = {'parent': parent, 'old': vOld, 'new': vNew}
-            if isinstance(vOld, dict) and isinstance(vNew, dict):
-                # compare child items Namespace
-                childDelta = compareNamespace(vOld, vNew, me)
-                namespaceDelta = updateDelta(namespaceDelta, childDelta)
-
-        # process unchanged keys
-        for k in unchanged:
-            me = _appendToParent(parent, k)
-            vOld = old[k]
-            vNew = new[k]
-            if vOld == vNew:
-                namespaceDelta.unchanged[me] = {'parent': parent, 'old': vOld, 'new': vNew}
-            if isinstance(vOld, dict) and isinstance(vNew, dict):
-                # compare child items Namespace
-                childDelta = compareNamespace(vOld, vNew, me)
-                namespaceDelta = updateDelta(namespaceDelta, childDelta)
         return namespaceDelta
 
     childDelta = do_item()
