@@ -19,3 +19,9 @@ you can wrap dicts and lists inside Namespace
     assert(n[0]['c']['c'][0]['d'] == n[0].c[0].d)
 
 see unit tests for more usage examples
+
+ChangeLog:
+
+- 1.0: initial version
+
+- 1.1: Added Namespace comparaison tools
