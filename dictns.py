@@ -20,7 +20,7 @@ class Namespace(dict):
             if type(v) in (dict, list):
                 dict.__setitem__(self, k, Namespace(v))
 
-    def __new__(cls, v):
+    def __new__(cls, v={}):
         if type(v) == dict:
             return dict.__new__(cls, v)
         elif type(v) == list:
@@ -60,16 +60,21 @@ class Namespace(dict):
         return Namespace(dict(self))
 
 
+def _appendToParent(parent, k):
+    """
+    Return 'parent.k' or 'k' if parent is None
+    """
+    return k if parent is None else parent + "." + k
+
+
 def documentNamespace(n, parent=None):
-    """This prints the available keys and subkeys of the data, and their types,
+    """
+    This prints the available keys and subkeys of the data, and their types,
     meant for quick auto-documentation of big json data
     """
     s = ""
     for k, v in n.items():
-        if parent:
-            me = parent + "." + k
-        else:
-            me = k
+        me = _appendToParent(parent, k)
 
         def do_item(me, v):
             t = type(v).__name__
@@ -86,3 +91,85 @@ def documentNamespace(n, parent=None):
             return s
         s += do_item(me, v)
     return s
+
+
+def compareNamespace(old, new, parent=None):
+    """
+    Recursively go through the dict tree and record the added, removed,
+    changed and unchanged keys
+
+    @param old: old Namespace
+    @type old: Namespace or dict
+    @param new: new Namespace
+    @type new: Namespace or dict
+    @param parent: parent node in Namespace / dict tree
+    @type parent: str
+    @return the delta between old and new Namespaces/dicts as a Namespace with
+            changed, unchanged, added and removed keys
+    @rtype: Namespace(dict({'changed': <compItem>,
+                            'unchanged': <compItem>,
+                            'added': <compItem>,
+                            'removed': <compItem>}))
+            type(compItem) = dict({str: {'parent': str,
+                                         'old': <type>,
+                                         'new': <type>}})
+    """
+
+    compareKeys = ['changed', 'unchanged', 'added', 'removed']
+
+    namespaceDelta = Namespace(dict((k, {}) for k in compareKeys))
+
+    def updateDelta(currentDelta, childDelta):
+        """Update current delta with child delta"""
+        for ck in compareKeys:
+            currentDelta[ck].update(childDelta[ck])
+        return currentDelta
+
+    def do_item():
+
+        namespaceDelta = Namespace(dict((k, {}) for k in compareKeys))
+
+        for k in set(old) | set(new):
+            vOld = old.get(k)
+            vNew = new.get(k)
+            if k in new and k not in old:
+                kstate = 'added'
+            elif k in old and k not in new:
+                kstate = 'removed'
+            elif vOld != vNew:
+                kstate = 'changed'
+            else:
+                kstate = 'unchanged'
+            me = _appendToParent(parent, k)
+            namespaceDelta[kstate][me] = {'parent': parent, 'old': vOld, 'new': vNew}
+
+            if kstate in ['changed', 'unchanged']:
+                if isinstance(vOld, dict) and isinstance(vNew, dict):
+                    # compare child items Namespace
+                    childDelta = compareNamespace(vOld, vNew, me)
+                    namespaceDelta = updateDelta(namespaceDelta, childDelta)
+
+        return namespaceDelta
+
+    childDelta = do_item()
+    namespaceDelta = updateDelta(namespaceDelta, childDelta)
+    return namespaceDelta
+
+
+def filterDelta(namespaceDelta):
+    """
+    @param namespaceDelta: the delta between old and new Namespaces or dicts as a Namespace with
+                           changed, unchanged, added and removed key
+    @type namespaceDelta: see compareNamespace @rtype
+    @return a new namespaceDelta with parent keys removed to limit the delta to the strict minimum
+    @rtype: see compareNamespace @rtype
+    """
+    filteredDelta = Namespace({})
+    for ck in ['changed', 'unchanged', 'added', 'removed']:
+        filteredDelta[ck] = namespaceDelta[ck].copy()
+        for k in namespaceDelta[ck]:
+            parent = namespaceDelta[ck][k]['parent']
+            if parent is not None and parent in filteredDelta[ck]:
+                # remove the parent key from delta
+                del filteredDelta[ck][parent]
+    return filteredDelta

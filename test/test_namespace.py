@@ -1,13 +1,17 @@
 import unittest
-import dictns as namespace
 import pickle
 import json
 from copy import deepcopy, copy
+from dictns import compareNamespace
+from dictns import documentNamespace
+from dictns import filterDelta
+from dictns import Namespace
 
-class Namespace(unittest.TestCase):
+
+class TestNamespace(unittest.TestCase):
 
     def test_basic(self):
-        n = namespace.Namespace({'a': {'b': {'c': 1}}})
+        n = Namespace({'a': {'b': {'c': 1}}})
 
         self.assertEqual(n.a.b.c, 1)
         self.assertEqual(n['a']['b']['c'], 1)
@@ -24,26 +28,26 @@ class Namespace(unittest.TestCase):
         self.assertEqual(n['a']['b']['c'], 2)
         n.a.b = {'d': 3}
         self.assertEqual(n.a.b.d, 3)
-        n.a.b = namespace.Namespace({'e': 4})
+        n.a.b = Namespace({'e': 4})
         self.assertEqual(n.a.b.e, 4)
         self.assertRaises(KeyError, lambda: n.a.b.d == 3)
-        self.assertEqual(namespace.Namespace(1), 1)
-        self.assertEqual(namespace.Namespace([1]), [1])
-        self.assertEqual(namespace.Namespace("1"), "1")
-        self.assertEqual(namespace.Namespace(["1"]), ["1"])
+        self.assertEqual(Namespace(1), 1)
+        self.assertEqual(Namespace([1]), [1])
+        self.assertEqual(Namespace("1"), "1")
+        self.assertEqual(Namespace(["1"]), ["1"])
 
         self.assertRaises(KeyError, lambda: n["__getitem__"])
         n.a['b'] = {'f': 5}
         self.assertEqual(n.a.b.f, 5)
 
     def test_nonzero(self):
-        n = namespace.Namespace({'a': {'b': {'c': 1}}})
-        self.failUnless(n)
-        n = namespace.Namespace({})
-        self.failIf(n)
+        n = Namespace({'a': {'b': {'c': 1}}})
+        self.assertTrue(n)
+        n = Namespace({})
+        self.assertFalse(n)
 
     def test_list(self):
-        n = namespace.Namespace([{'a': {'b': {
+        n = Namespace([{'a': {'b': {
                                 'c': 1}}}, {'a': {'b': {'c': 2}}}])
         self.assertEqual(n[0].a.b.c, 1)
         self.assertEqual(n[1].a.b.c, 2)
@@ -52,11 +56,11 @@ class Namespace(unittest.TestCase):
 
     def test_jsondump(self):
         s = '[{"a": {"b": {"c": 1}}}, {"a": {"b": {"c": 2}}}]'
-        n = namespace.Namespace(json.loads(s))
+        n = Namespace(json.loads(s))
         self.assertEqual(json.dumps(n), s)
 
     def test_prettyprint(self):
-        n = namespace.Namespace({'a': [{'b': {'c': 1}}]})
+        n = Namespace({'a': [{'b': {'c': 1}}]})
         expected = """\
 {
     "a": [
@@ -74,10 +78,10 @@ a[i] -> dict
 a[i].b -> dict
 a[i].b.c -> int
 """
-        self.assertEqual(namespace.documentNamespace(n), expected)
+        self.assertEqual(documentNamespace(n), expected)
 
     def test_pickle(self):
-        n = namespace.Namespace([{'a': {'b': {
+        n = Namespace([{'a': {'b': {
                                 'c': 1}}}, {'a': {'b': {'c': 2}}}])
         s = pickle.dumps(n)
         n = pickle.loads(s)
@@ -87,7 +91,7 @@ a[i].b.c -> int
             self.assertEqual(i.a.b.c, i.a.b.c)
 
     def test_deepcopy(self):
-        a = namespace.Namespace(
+        a = Namespace(
             {'a': dict(b=[1, 2, 3])})
 
         b = deepcopy(a)
@@ -96,10 +100,38 @@ a[i].b.c -> int
         self.assertNotEqual(id(a.a.b), id(b.a.b))
 
     def test_copy(self):
-        a = namespace.Namespace(
+        a = Namespace(
             {'a': dict(b=[1, 2, 3])})
 
         b = copy(a)
         self.assertEqual(a, b)
         self.assertNotEqual(id(a), id(b))
         self.assertEqual(id(a.a.b), id(b.a.b))
+
+    def testCompareNamespace(self):
+        nOld = Namespace({'color': 'red',
+                          'size': 5,
+                          'form': 'square',
+                          'owner': {'name': 'bob', 'age': 12, 'nationality': 'French'}})
+        nNew = Namespace({'color': 'red',
+                          'size': 8,
+                          'owner': {'name': 'john', 'age': 12, 'genre': 'M'},
+                          'protected': True})
+
+        namespaceDelta = compareNamespace(nOld, nNew)
+        filteredDelta = filterDelta(namespaceDelta)
+
+        self.assertEqual(set(filteredDelta.removed.keys()), set(['form', 'owner.nationality']))
+        self.assertEqual(set(filteredDelta.added.keys()), set(['protected', 'owner.genre']))
+        self.assertEqual(set(filteredDelta.changed.keys()), set(['size', 'owner.name']))
+        self.assertEqual(set(filteredDelta.unchanged.keys()), set(['color', 'owner.age']))
+
+        item = filteredDelta.changed['owner.name']
+        self.assertEqual(item.parent, 'owner')
+        self.assertEqual(item.old, 'bob')
+        self.assertEqual(item.new, 'john')
+
+        item = filteredDelta.removed['form']
+        self.assertEqual(item.parent, None)
+        self.assertEqual(item.old, 'square')
+        self.assertEqual(item.new, None)
