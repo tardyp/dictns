@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Installs namespace using setuptools
+"""Installs dictns using setuptools
 
 Run:
     python setup.py install
@@ -23,7 +23,7 @@ if __name__ == "__main__":
 
 This Namespace objects work in a similar way as javascript objects.
 usage:
-    from namespace import Namespace
+    from dictns import Namespace
     n = Namespace(dict(a=1, b=3, c=dict(d=4)))
     assert(n['a'] == n.a)
     assert(n['c']['c] == n.c.d)
@@ -32,24 +32,18 @@ usage:
     }
     ### Now the actual set up call
     setup(
-        name="namespace",
+        name="dictns",
         version=version,
-        url="http://github.com/tardyp/namespace",
-        download_url="http://github.com/tardyp/namespace",
+        url="http://github.com/tardyp/dictns",
+        download_url="http://github.com/tardyp/dictns",
         description="simple class that merge dictionary and object API",
         author="Pierre Tardy",
         author_email="tardyp@gmail.com",
         install_requires=[
         ],
         license="BSD",
-        namespace_packages=[
-            'namespace',
+        py_modules=[
+            'dictns',
         ],
-        packages=find_packages(),
-        options={
-            'sdist': {
-                'force_manifest': 1,
-                'formats': ['gztar', 'zip'], },
-        },
         **extraArguments
     )

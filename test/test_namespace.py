@@ -1,5 +1,5 @@
 import unittest
-import namespace
+import dictns as namespace
 import pickle
 import json
 from copy import deepcopy, copy
