@@ -1,3 +1,5 @@
+# dictns [![Build Status](https://travis-ci.org/tardyp/dictns.png?branch=master)](https://travis-ci.org/tardyp/dictns)
+
 simple python class that merges dictionary and object APIs
 
 Those Namespace objects work in a similar way as javascript objects.
