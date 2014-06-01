@@ -21,9 +21,9 @@ class Namespace(dict):
                 dict.__setitem__(self, k, Namespace(v))
 
     def __new__(cls, v={}):
-        if isinstance (v, dict):
+        if isinstance(v, dict):
             return dict.__new__(cls, v)
-        elif isinstance (v, list):
+        elif isinstance(v, list):
             return [Namespace(i) for i in v]
         else:
             return v
