@@ -17,13 +17,13 @@ class Namespace(dict):
         dict.__init__(self, d)
         for k, v in d.items():
             # if already a Namespace, this will not match
-            if type(v) in (dict, list):
+            if isinstance(v, (dict, list)):
                 dict.__setitem__(self, k, Namespace(v))
 
     def __new__(cls, v={}):
-        if type(v) == dict:
+        if isinstance (v, dict):
             return dict.__new__(cls, v)
-        elif type(v) == list:
+        elif isinstance (v, list):
             return [Namespace(i) for i in v]
         else:
             return v
