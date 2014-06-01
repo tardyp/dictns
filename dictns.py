@@ -17,11 +17,11 @@ class Namespace(dict):
         dict.__init__(self, d)
         for k, v in d.items():
             # if already a Namespace, this will not match
-            if isinstance(v, (dict, list)):
+            if isinstance(v, (dict, list)) and not isinstance(v, Namespace):
                 dict.__setitem__(self, k, Namespace(v))
 
     def __new__(cls, v={}):
-        if isinstance(v, dict):
+        if isinstance(v, dict) and not isinstance(v, Namespace):
             return dict.__new__(cls, v)
         elif isinstance(v, list):
             return [Namespace(i) for i in v]

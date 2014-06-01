@@ -6,9 +6,9 @@ Run:
 to install the package from the source archive.
 """
 
-from setuptools import setup, find_packages
+from setuptools import setup
 
-version = 1.1
+version = 1.2
 
 if __name__ == "__main__":
     extraArguments = {
@@ -30,7 +30,7 @@ usage:
 """,
         'platforms': ['Any'],
     }
-    ### Now the actual set up call
+    # Now the actual set up call
     setup(
         name="dictns",
         version=version,

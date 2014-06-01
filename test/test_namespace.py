@@ -1,6 +1,7 @@
 import unittest
 import pickle
 import json
+import collections
 from copy import deepcopy, copy
 from dictns import compareNamespace
 from dictns import documentNamespace
@@ -135,3 +136,27 @@ a[i].b.c -> int
         self.assertEqual(item.parent, None)
         self.assertEqual(item.old, 'square')
         self.assertEqual(item.new, None)
+
+    @unittest.skipUnless(
+        hasattr(collections, "OrderedDict"),
+        "python version does not support OrderedDict")
+    def testOrderedDict(self):
+        ordered = collections.OrderedDict([("a", "b"), ("c", "d")])
+        nsordered = Namespace(ordered)
+        self.assertEqual(nsordered.a, ordered["a"])
+        self.assertEqual(nsordered.c, nsordered.values()[-1])
+        ordered['e'] = 'f'
+        self.assertEqual(nsordered.c, nsordered.values()[-1])
+        nsordered['e'] = 'f'
+        self.assertEqual(nsordered.e, nsordered.values()[-1])
+        for i in xrange(1000):
+            nsordered[str(i)] = i
+            ordered[str(i)] = i
+
+        # Namespace of an OrderedDict is *not* ordered
+        self.assertEqual(999, ordered.values()[-1])
+        self.assertNotEqual(999, nsordered.values()[-1])
+
+        nsordered = Namespace(ordered)
+        # still not ordered...
+        self.assertNotEqual(999, nsordered.values()[-1])
