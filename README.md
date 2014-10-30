@@ -30,3 +30,5 @@ ChangeLog:
 - 1.1: Added Namespace comparaison tools
 
 - 1.2: Namespace now support dict and list subclasses as input
+
+- 1.2.1: fix for compatibility with getattr() buildin method

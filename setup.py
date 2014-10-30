@@ -8,7 +8,7 @@ to install the package from the source archive.
 
 from setuptools import setup
 
-version = 1.2
+version = "1.2.1"
 
 if __name__ == "__main__":
     extraArguments = {
