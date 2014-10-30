@@ -31,7 +31,7 @@ ChangeLog:
 
 - 1.2: Namespace now support dict and list subclasses as input
 
-- 1.2.1:
+- 1.3:
     - fix for compatibility with getattr() buildin method. When an invalid key is requested, it
       now raises a AttributeError instead of a KeyError.
     - allow initialization without arg: Namespace() is equivalent to Namespace({})
