@@ -15,7 +15,9 @@ class Namespace(dict):
     """
     __slots__ = []
 
-    def __init__(self, d):
+    def __init__(self, d=None):
+        if d is None:
+            d = {}
         dict.__init__(self, d)
         for k, v in d.items():
             # if already a Namespace, this will not match
@@ -48,8 +50,8 @@ class Namespace(dict):
         # We need to convert TypeError to AttributeError in order to behave like other __getattr__
         # when getattr() method is used with a default argument
         try:
-            dict.__getitem__(name)
-        except TypeError as e:
+            return dict.__getitem__(self, name)
+        except KeyError as e:
             raise AttributeError(e)
 
     __setattr__ = __setitem__

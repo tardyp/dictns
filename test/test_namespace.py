@@ -6,6 +6,8 @@ except ImportError:
 import pickle
 import json
 import collections
+
+from textwrap import dedent
 from copy import deepcopy, copy
 from dictns import compareNamespace
 from dictns import documentNamespace
@@ -35,7 +37,7 @@ class TestNamespace(unittest.TestCase):
         self.assertEqual(n.a.b.d, 3)
         n.a.b = Namespace({'e': 4})
         self.assertEqual(n.a.b.e, 4)
-        self.assertRaises(KeyError, lambda: n.a.b.d == 3)
+        self.assertRaises(AttributeError, lambda: n.a.b.d == 3)
         self.assertEqual(Namespace(1), 1)
         self.assertEqual(Namespace([1]), [1])
         self.assertEqual(Namespace("1"), "1")
@@ -51,9 +53,25 @@ class TestNamespace(unittest.TestCase):
         n = Namespace({})
         self.assertFalse(n)
 
+    def test_emptynamespace(self):
+        n = Namespace()
+        self.assertFalse(n)
+        self.assertEqual(n, {})
+
     def test_list(self):
-        n = Namespace([{'a': {'b': {
-                                'c': 1}}}, {'a': {'b': {'c': 2}}}])
+        n = Namespace([{
+            'a': {
+                'b': {
+                    'c': 1
+                }
+            }
+        }, {
+            'a': {
+                'b': {
+                    'c': 2
+                }
+            }
+        }])
         self.assertEqual(n[0].a.b.c, 1)
         self.assertEqual(n[1].a.b.c, 2)
         for i in n:
@@ -66,28 +84,39 @@ class TestNamespace(unittest.TestCase):
 
     def test_prettyprint(self):
         n = Namespace({'a': [{'b': {'c': 1}}]})
-        expected = """\
-{
-    "a": [
-        {
-            "b": {
-                "c": 1
-            }
-        }
-    ]
-}"""
+        expected = dedent("""\
+            {
+                "a": [
+                    {
+                        "b": {
+                            "c": 1
+                        }
+                    }
+                ]
+            }""")
         self.assertEqual(repr(n), expected)
-        expected = """\
-a -> list
-a[i] -> dict
-a[i].b -> dict
-a[i].b.c -> int
-"""
+        expected = dedent("""\
+            a -> list
+            a[i] -> dict
+            a[i].b -> dict
+            a[i].b.c -> int
+            """)
         self.assertEqual(documentNamespace(n), expected)
 
     def test_pickle(self):
-        n = Namespace([{'a': {'b': {
-                                'c': 1}}}, {'a': {'b': {'c': 2}}}])
+        n = Namespace([{
+            'a': {
+                'b': {
+                    'c': 1
+                }
+            }
+        }, {
+            'a': {
+                'b': {
+                    'c': 2
+                }
+            }
+        }])
         s = pickle.dumps(n)
         n = pickle.loads(s)
         self.assertEqual(n[0].a.b.c, 1)
@@ -96,22 +125,34 @@ a[i].b.c -> int
             self.assertEqual(i.a.b.c, i.a.b.c)
 
     def test_deepcopy(self):
-        a = Namespace(
-            {'a': dict(b=[1, 2, 3])})
-
+        a = Namespace({
+            'a': dict(b=[1, 2, 3])
+        })
         b = deepcopy(a)
         self.assertEqual(a, b)
         self.assertNotEqual(id(a), id(b))
         self.assertNotEqual(id(a.a.b), id(b.a.b))
 
     def test_copy(self):
-        a = Namespace(
-            {'a': dict(b=[1, 2, 3])})
+        a = Namespace({
+            'a': dict(b=[1, 2, 3])
+        })
 
         b = copy(a)
         self.assertEqual(a, b)
         self.assertNotEqual(id(a), id(b))
         self.assertEqual(id(a.a.b), id(b.a.b))
+
+    def test_getattrcompat(self):
+
+        class Obj:
+            a = Namespace({'a': 1})
+
+        o = Obj
+
+        self.assertEqual(getattr(o, "a", 987), {'a': 1})
+        self.assertEqual(getattr(o.a, "a", 987), 1)
+        self.assertEqual(getattr(o.a, "invalid member", 987), 987)
 
     def testCompareNamespace(self):
         nOld = Namespace({'color': 'red',
@@ -164,3 +205,7 @@ a[i].b.c -> int
         nsordered = Namespace(ordered)
         # still not ordered...
         self.assertNotEqual(999, nsordered.values()[-1])
+
+if __name__ == '__main__':
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestNamespace)
+    unittest.TextTestRunner(verbosity=2).run(suite)
