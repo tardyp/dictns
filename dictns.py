@@ -1,8 +1,10 @@
 import json
-from copy import deepcopy, copy
+
+from copy import deepcopy
 
 
 class Namespace(dict):
+
     """
     A convenience class that makes a json like dict of (dicts,lists,strings,integers)
     looks like a python object allowing syntax sugar like mydict.key1.key2.key4 = 5
@@ -13,7 +15,9 @@ class Namespace(dict):
     """
     __slots__ = []
 
-    def __init__(self, d):
+    def __init__(self, d=None):
+        if d is None:
+            d = {}
         dict.__init__(self, d)
         for k, v in d.items():
             # if already a Namespace, this will not match
@@ -27,8 +31,8 @@ class Namespace(dict):
             return [Namespace(i) for i in v]
         else:
             return v
-# pretty printing
 
+    # pretty printing
     def __repr__(self):
         """ pretty printed __repr__, for debugging"""
         d = dict(self)
@@ -37,12 +41,19 @@ class Namespace(dict):
         except Exception:
             return repr(d)
 
-# on the fly conversion
+    # on the fly conversion
     def __setitem__(self, k, v):
         dict.__setitem__(self, k, Namespace(v))
 
-# object like accessors
-    __getattr__ = dict.__getitem__
+    # object like accessors
+    def __getattr__(self, name):
+        # We need to convert TypeError to AttributeError in order to behave like other __getattr__
+        # when getattr() method is used with a default argument
+        try:
+            return dict.__getitem__(self, name)
+        except KeyError as e:
+            raise AttributeError(e)
+
     __setattr__ = __setitem__
 
     def __getstate__(self):
@@ -51,11 +62,11 @@ class Namespace(dict):
     def __setstate__(self, _dict):
         self.__init__(_dict)
 
-# deepcopy
+    # deepcopy
     def __deepcopy__(self, memo):
         return Namespace(deepcopy(dict(self)))
 
-# copy
+    # copy
     def __copy__(self):
         return Namespace(dict(self))
 
