@@ -35,3 +35,11 @@ ChangeLog:
     - fix for compatibility with getattr() buildin method. When an invalid key is requested, it
       now raises a AttributeError instead of a KeyError.
     - allow initialization without arg: Namespace() is equivalent to Namespace({})
+
+
+Developping
+-----------
+
+Launch unit tests:
+
+    python test/test_namespace.py
