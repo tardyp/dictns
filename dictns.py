@@ -13,7 +13,7 @@ class Namespace(dict):
     input should always be json-able but this is checked only in pedentic mode, for
     obvious performance reason
     """
-    __slots__ = []
+    __slots__ = ['__weakref__']
 
     def __init__(self, d=None):
         if d is None:

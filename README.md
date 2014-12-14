@@ -36,6 +36,7 @@ ChangeLog:
       now raises a AttributeError instead of a KeyError.
     - allow initialization without arg: Namespace() is equivalent to Namespace({})
 
+- 1.4: Allow Namespace objects to be weak referenced
 
 Developping
 -----------

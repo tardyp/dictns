@@ -6,6 +6,7 @@ except ImportError:
 import pickle
 import json
 import collections
+import weakref
 
 from textwrap import dedent
 from copy import deepcopy, copy
@@ -205,6 +206,10 @@ class TestNamespace(unittest.TestCase):
         nsordered = Namespace(ordered)
         # still not ordered...
         self.assertNotEqual(999, nsordered.values()[-1])
+
+    def testWeakref(self):
+        n = Namespace({'a': {'b': {'c': 1}}})
+        weakref.ref(n)
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(TestNamespace)
