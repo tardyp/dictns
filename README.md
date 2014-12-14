@@ -18,28 +18,28 @@ you can wrap dicts and lists inside Namespace
     assert(n[0]['a'] == n[0].a)
     assert(n[0]['c']['c'][0]['d'] == n[0].c[0].d)
 
-you can also wrap dict subclasses like OrederedDict, but the resulting Namespace
+you can also wrap dict subclasses like OrderedDict, but the resulting Namespace
 does not inherit original object characteristics (i.e. order in OrderedDict)
 
 see unit tests for more usage examples
 
 ChangeLog:
 
-- 1.0: initial version
+- 1.0: Initial version
 
 - 1.1: Added Namespace comparaison tools
 
 - 1.2: Namespace now support dict and list subclasses as input
 
 - 1.3:
-    - fix for compatibility with getattr() buildin method. When an invalid key is requested, it
-      now raises a AttributeError instead of a KeyError.
-    - allow initialization without arg: Namespace() is equivalent to Namespace({})
+    - Fix for compatibility with getattr() built-in method. When an invalid key is requested, it
+      now raises an AttributeError instead of a KeyError.
+    - Allow initialization without arg: Namespace() is equivalent to Namespace({}).
 
 - 1.4: Allow Namespace objects to be weak referenced
 
-Developping
------------
+Developing
+----------
 
 Launch unit tests:
 
