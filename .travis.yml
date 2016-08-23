@@ -1,11 +1,12 @@
 language: python
 python:
+  - "3.5"
   - "2.6"
   - "2.7"
   - "pypy"
 # command to install dependencies
 install:
   - pip install unittest2
-  - pip install . --use-mirrors
+  - pip install .
 # command to run tests
 script: unit2 discover -v -s test
