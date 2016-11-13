@@ -7,16 +7,16 @@ intended to help deadling with deep json objects, and save you a lot of [''] in 
 
 usage:
 
-    from namespace import Namespace
+    from dictns import Namespace
     n = Namespace(dict(a=1, b=3, c=dict(d=4)))
     assert(n['a'] == n.a)
-    assert(n['c']['c']['d'] == n.c.d)
+    assert(n['c']['d'] == n.c.d)
 
 you can wrap dicts and lists inside Namespace
 
     n = Namespace([dict(a=1, b=3, c=[dict(d=4)])])
     assert(n[0]['a'] == n[0].a)
-    assert(n[0]['c']['c'][0]['d'] == n[0].c[0].d)
+    assert(n[0]['c'][0]['d'] == n[0].c[0].d)
 
 you can also wrap dict subclasses like OrderedDict, but the resulting Namespace
 does not inherit original object characteristics (i.e. order in OrderedDict)
