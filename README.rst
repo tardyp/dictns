@@ -1,11 +1,21 @@
-# dictns [![Build Status](https://travis-ci.org/tardyp/dictns.png?branch=master)](https://travis-ci.org/tardyp/dictns)
+######
+dictns
+######
+
+
+ .. image:: https://travis-ci.org/tardyp/dictns.png?branch=master
+     :target: https://travis-ci.org/tardyp/dictns
+
 
 simple python class that merges dictionary and object APIs
 
 Those Namespace objects work in a similar way as javascript objects.
 intended to help deadling with deep json objects, and save you a lot of [''] in your code
 
-usage:
+usage
+-----
+
+.. code-block:: python
 
     from dictns import Namespace
     n = Namespace(dict(a=1, b=3, c=dict(d=4)))
@@ -13,6 +23,8 @@ usage:
     assert(n['c']['d'] == n.c.d)
 
 you can wrap dicts and lists inside Namespace
+
+.. code-block:: python
 
     n = Namespace([dict(a=1, b=3, c=[dict(d=4)])])
     assert(n[0]['a'] == n[0].a)
@@ -37,6 +49,10 @@ ChangeLog:
     - Allow initialization without arg: Namespace() is equivalent to Namespace({}).
 
 - 1.4: Allow Namespace objects to be weak referenced
+
+- 1.5:
+    - Fix tests for 3.5 and pypy
+    - Readme cleanups
 
 Developing
 ----------
