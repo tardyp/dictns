@@ -6,31 +6,13 @@ Run:
 to install the package from the source archive.
 """
 
+import os
+
 from setuptools import setup
 
-version = "1.4"
+version = "1.5"
 
 if __name__ == "__main__":
-    extraArguments = {
-        'classifiers': [
-            """License :: OSI Approved :: BSD License""",
-            """Programming Language :: Python""",
-            """Topic :: Software Development :: Libraries :: Python Modules""",
-            """Intended Audience :: Developers""",
-        ],
-        'keywords': 'dict, object',
-        'long_description': """simple class that merges dictionary and object API
-
-This Namespace objects work in a similar way as javascript objects.
-usage:
-    from dictns import Namespace
-    n = Namespace(dict(a=1, b=3, c=dict(d=4)))
-    assert(n['a'] == n.a)
-    assert(n['c']['d'] == n.c.d)
-""",
-        'platforms': ['Any'],
-    }
-    # Now the actual set up call
     setup(
         name="dictns",
         version=version,
@@ -45,5 +27,13 @@ usage:
         py_modules=[
             'dictns',
         ],
-        **extraArguments
+        classifiers=[
+            """License :: OSI Approved :: BSD License""",
+            """Programming Language :: Python""",
+            """Topic :: Software Development :: Libraries :: Python Modules""",
+            """Intended Audience :: Developers""",
+        ],
+        keywords='dict, object',
+        long_description=open(os.path.join(os.path.dirname(__file__), "README.rst")).read(),
+        platforms=['Any'],
     )
