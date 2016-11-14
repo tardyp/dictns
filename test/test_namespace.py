@@ -187,7 +187,6 @@ class TestNamespace(unittest.TestCase):
         ordered = collections.OrderedDict([("a", "b"), ("c", "d")])
         nsordered = Namespace(ordered)
         self.assertEqual(nsordered.a, ordered["a"])
-        self.assertEqual(nsordered.c, list(nsordered.values())[-1])
 
     def testWeakref(self):
         n = Namespace({'a': {'b': {'c': 1}}})
