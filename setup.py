@@ -26,7 +26,7 @@ usage:
     from dictns import Namespace
     n = Namespace(dict(a=1, b=3, c=dict(d=4)))
     assert(n['a'] == n.a)
-    assert(n['c']['c] == n.c.d)
+    assert(n['c']['d'] == n.c.d)
 """,
         'platforms': ['Any'],
     }
